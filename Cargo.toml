@@ -12,3 +12,5 @@ block-mesh = "0.2.0"
 grid-tree = "0.2.0"
 ndshape = "0.3.0"
 ahash = { version = "0.7", features = ["serde"] }
+simdnoise = "3.1.6"
+futures-lite = "1.13.0"

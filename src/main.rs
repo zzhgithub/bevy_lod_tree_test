@@ -3,6 +3,7 @@ mod chunk_generator;
 mod clip_sphere;
 mod clipmap;
 mod detect_new_slots;
+mod noise;
 mod sync_batch;
 mod uils;
 mod voxel_map;
@@ -13,7 +14,7 @@ use bevy::{
 };
 use bevy_flycam::PlayerPlugin;
 use chunk::ChunkTreeMap;
-use chunk_generator::chunk_generator_system;
+use chunk_generator::{chunk_generator_system, GenerateTasks};
 use clip_sphere::{clip_spheres_system, ClipSpheres};
 use clipmap::Sphere3;
 use detect_new_slots::{detect_new_slots_system, NewSlot};
@@ -64,4 +65,7 @@ fn setup(mut commands: Commands) {
     // 设置slot的接受器
     let new_slots_batch = SyncBatch::<NewSlot>::default();
     commands.insert_resource(new_slots_batch);
+
+    // 设置任务列表
+    commands.insert_resource(GenerateTasks::default());
 }

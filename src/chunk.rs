@@ -77,4 +77,4 @@ impl<T> ChunkMap<T> {
 }
 
 // 保存数据的最终map
-pub type ChunkTreeMap = ChunkMap<[WorldVoxel; ChunkShape::SIZE as usize]>;
+pub type ChunkTreeMap = ChunkMap<Vec<WorldVoxel>>;
