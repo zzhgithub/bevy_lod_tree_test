@@ -1,4 +1,5 @@
 mod chunk;
+mod chunk_generator;
 mod clip_sphere;
 mod clipmap;
 mod detect_new_slots;
@@ -12,6 +13,7 @@ use bevy::{
 };
 use bevy_flycam::PlayerPlugin;
 use chunk::ChunkTreeMap;
+use chunk_generator::chunk_generator_system;
 use clip_sphere::{clip_spheres_system, ClipSpheres};
 use clipmap::Sphere3;
 use detect_new_slots::{detect_new_slots_system, NewSlot};
@@ -21,7 +23,7 @@ use sync_batch::SyncBatch;
 pub type SmallKeyHashMap<K, V> = ahash::AHashMap<K, V>;
 
 pub const OCTREE_HEIGHT: Level = 10;
-pub const DETAIL: i32 = 2;
+pub const DETAIL: i32 = 1;
 pub const DECT_LEVEL: Level = 2;
 pub const RADIUS: f32 = 1500.00;
 
@@ -37,8 +39,12 @@ fn main() {
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
+        // 球体更新
         .add_system(clip_spheres_system)
+        // 检查更新插槽
         .add_system(detect_new_slots_system)
+        // 生成chunk数据!
+        .add_system(chunk_generator_system)
         .run();
 }
 
