@@ -10,10 +10,11 @@ pub struct NewSlot {
     pub key: NodeKey<IVec3>,
     pub min: IVec3,
     pub max: IVec3,
+    pub is_render: bool,
 }
 
 impl NewSlot {
-    pub fn new(key: NodeKey<IVec3>) -> Self {
+    pub fn new(key: NodeKey<IVec3>, is_render: bool) -> Self {
         let coords = key.coordinates;
         let scale_factor = 2i32.pow(key.level as u32); //(2.level次方？)
         let child_min = coords * scale_factor;
@@ -22,6 +23,7 @@ impl NewSlot {
             key: key,
             min: child_min,
             max: child_max,
+            is_render: is_render,
         }
     }
 }
@@ -31,9 +33,13 @@ pub fn detect_new_slots_system(
     frame_new_slots: Res<SyncBatch<NewSlot>>,
 ) {
     let mut new_slots = Vec::new();
-    find_slot_by_sphere(OCTREE_HEIGHT, DETAIL, clip_spheres.new_sphere, |new_slot| {
-        new_slots.push(new_slot)
-    });
-    frame_new_slots.extend(new_slots.into_iter().map(|s| NewSlot::new(s)));
+    find_slot_by_sphere(
+        OCTREE_HEIGHT,
+        DETAIL,
+        clip_spheres.old_sphere,
+        clip_spheres.new_sphere,
+        |new_slot| new_slots.push(new_slot),
+    );
+    frame_new_slots.extend(new_slots.into_iter().map(|s| NewSlot::new(s.0, s.1)));
     println!("Finish slot;")
 }

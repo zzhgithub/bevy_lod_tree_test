@@ -32,7 +32,8 @@ pub fn clip_spheres_system(
     // println!("position update: {:?}", position);
     clip_spheres.old_sphere = clip_spheres.new_sphere;
     clip_spheres.new_sphere = Sphere3 {
-        center: vec3_to_veci3(position),
+        center: position.to_array(),
         radius: RADIUS,
+        is_init: false,
     }
 }

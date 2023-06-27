@@ -25,6 +25,7 @@ pub enum ChunkState {
 pub struct ChunkMap<T> {
     // 用于存储 数据
     pub data_map: SmallKeyHashMap<NodeKey<IVec3>, T>,
+    // 需要知道的状态？
 }
 
 impl<T> ChunkMap<T> {

@@ -22,7 +22,10 @@ pub type SmallKeyHashMap<K, V> = ahash::AHashMap<K, V>;
 
 pub const OCTREE_HEIGHT: Level = 10;
 pub const DETAIL: i32 = 2;
+pub const DECT_LEVEL: Level = 2;
 pub const RADIUS: f32 = 1500.00;
+
+pub const CHUNK_SIZE: i32 = 16;
 
 type ChunkShape = ConstShape3i32<16, 16, 16>;
 
@@ -46,8 +49,9 @@ fn setup(mut commands: Commands) {
 
     // 设置探测圆
     let clip_spheres = ClipSpheres::new(Sphere3 {
-        center: IVec3::ZERO,
+        center: [0.0, 0.0, 0.0],
         radius: RADIUS,
+        is_init: true,
     });
     commands.insert_resource(clip_spheres);
 
