@@ -69,6 +69,7 @@ pub fn chunk_generator_system(
             for dst_chunk_key in downsample_slots.drain(..) {
                 scope.spawn(async move {
                     // todo
+                    // 这里生成低采样的数据
                 });
             }
         });
@@ -84,7 +85,8 @@ pub fn chunk_generator_system(
             let scale = 5.0;
             let seed = 1010;
             let octaves = 6;
-            let res = generate_noise_chunk(key, freq, 5.0, seed, octaves);
+            // todo 这里应该从服务器生成获取 甚至 可以获取到 已经生成的数据
+            let res = generate_noise_chunk(key, freq, scale, seed, octaves);
             (key, res)
         });
         generate_tasks.tasks.push(task);

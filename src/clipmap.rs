@@ -54,6 +54,67 @@ impl CanSubdivide for NodeKey<IVec3> {
     }
 }
 
+pub fn find_chunk_to_render(
+    hegiht: u8,
+    detail: i32,
+    new_sphere: Sphere3,
+    // 处理回调函数
+    mut rx: impl FnMut((NodeKey<IVec3>, bool)),
+) {
+    let mut tree = OctreeI32::new(hegiht);
+    let target_key = NodeKey::new(0, new_sphere.to_ivec3());
+    let root_key = NodeKey::new(tree.root_level(), IVec3::ZERO);
+    // 先设置好这个值
+    tree.fill_tree_from_root(root_key, 0, |key, entry| -> VisitCommand {
+        match entry {
+            // 不透明
+            NodeEntry::Occupied(_) => {}
+            // Vacant 空的
+            NodeEntry::Vacant(v) => {
+                v.insert(());
+            }
+        }
+
+        if target_key.can_subdivide(key, detail) {
+            VisitCommand::Continue
+        } else {
+            VisitCommand::SkipDescendants
+        }
+    });
+
+    // 在遍历获取的不同的lod
+    tree.iter_roots()
+        .map(|(root_key, root_node)| (root_key, NodePtr::new(root_key.level, root_node.self_ptr)))
+        .for_each(|(root_key, root_ptr)| {
+            tree.visit_tree_depth_first(
+                root_ptr,
+                root_key.coordinates,
+                0,
+                |child_ptr, child_coords| {
+                    if (child_ptr.level() == 0) {
+                        let node_key = NodeKey::new(child_ptr.level(), child_coords);
+                        let chunk_shpere = chunk_bound_sphere(node_key);
+                        let dist_to_new_clip_sphere =
+                            new_sphere.distance(chunk_shpere) * CHUNK_SIZE as f32;
+                        let node_intersects_new_clip_sphere =
+                            dist_to_new_clip_sphere - chunk_shpere.radius < new_sphere.radius;
+                        // 这里的数据才展示
+                        if (node_intersects_new_clip_sphere) {
+                            let is_render_candidate = node_key.level == 0
+                                || dist_to_new_clip_sphere / chunk_shpere.radius
+                                    > DECT_LEVEL as f32;
+                            rx((
+                                NodeKey::new(child_ptr.level(), child_coords),
+                                is_render_candidate,
+                            ));
+                        }
+                    }
+                    VisitCommand::Continue
+                },
+            )
+        });
+}
+
 pub fn find_slot_by_sphere(
     hegiht: u8,
     detail: i32,
@@ -120,10 +181,9 @@ pub fn find_slot_by_sphere(
                                 && !old_sphere.is_init;
                         let node_intersects_new_clip_sphere =
                             dist_to_new_clip_sphere - chunk_shpere.radius < new_sphere.radius;
-                        println!("1");
                         if !node_intersects_new_clip_sphere {
                             // There are no events for this node or any of its descendants.
-                            VisitCommand::Continue;
+                            return VisitCommand::Continue;
                         }
                         if !node_intersects_old_clip_sphere {
                             let is_render_candidate = node_key.level == 0

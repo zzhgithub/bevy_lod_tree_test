@@ -26,6 +26,14 @@ impl NewSlot {
             is_render: is_render,
         }
     }
+
+    pub fn min_u32(&self) -> [u32; 3] {
+        [self.min.x as u32, self.min.y as u32, self.min.z as u32]
+    }
+
+    pub fn max_u32(&self) -> [u32; 3] {
+        [self.max.x as u32, self.max.y as u32, self.max.z as u32]
+    }
 }
 
 pub fn detect_new_slots_system(

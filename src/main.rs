@@ -3,13 +3,18 @@ mod chunk_generator;
 mod clip_sphere;
 mod clipmap;
 mod detect_new_slots;
+mod mesh_generator;
 mod noise;
 mod sync_batch;
 mod uils;
 mod voxel_map;
+mod voxel_mesh;
 
 use bevy::{
-    prelude::{bevy_main, App, Commands},
+    prelude::{
+        bevy_main, AmbientLight, App, Assets, Color, Commands, PointLight, PointLightBundle,
+        ResMut, SpotLight, StandardMaterial, Transform, Vec3,
+    },
     DefaultPlugins,
 };
 use bevy_flycam::PlayerPlugin;
@@ -18,7 +23,8 @@ use chunk_generator::{chunk_generator_system, GenerateTasks};
 use clip_sphere::{clip_spheres_system, ClipSpheres};
 use clipmap::Sphere3;
 use detect_new_slots::{detect_new_slots_system, NewSlot};
-use grid_tree::{glam::IVec3, Level};
+use grid_tree::Level;
+use mesh_generator::ChunkMeshes;
 use ndshape::ConstShape3i32;
 use sync_batch::SyncBatch;
 pub type SmallKeyHashMap<K, V> = ahash::AHashMap<K, V>;
@@ -49,7 +55,7 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
     // 设置地图模块
     let chunk_map = ChunkTreeMap::new();
     commands.insert_resource(chunk_map);
@@ -68,4 +74,21 @@ fn setup(mut commands: Commands) {
 
     // 设置任务列表
     commands.insert_resource(GenerateTasks::default());
+
+    commands.insert_resource(ChunkMeshes::default());
+
+    // 加载测试使用的基础材质 加载一个纯色基础材质
+    let material = StandardMaterial::from(Color::rgb(1.0, 0.0, 0.0));
+    materials.add(material);
+    
+    // 加载光源
+    commands.spawn(PointLightBundle {
+        transform: Transform::from_translation(Vec3::new(0.0, 50.0, 50.0)),
+        point_light: PointLight {
+            range: 200.0,
+            intensity: 20000.0,
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 }
